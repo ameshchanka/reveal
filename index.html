@@ -1,0 +1,407 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Routing History API</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/black.css">
+    
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="dist/style.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section> <!-- SLIDE 0 -->
+          Routing
+          <br />
+          History API
+        </section>
+				<section> <!-- SLIDE 1 -->
+          A router is a JavaScript object that maps URLs to functions. The router calls a function based on the URL
+        </section>
+        <section> <!-- SLIDE 2 -->
+          The concept
+          <br />
+          <br />
+          <span style="font-size: 0.7em;">A router watches for changes in the URL and calls the appropriate function. The method is then responsible for rendering the view.</span>
+          <br />
+          <br />
+          <span class="text">For example, if the URL is <em class="hljs-symbol"> /about </em>, the router will call the <em class="hljs-symbol"> about </em> function. The invoked method will call other functions that deal with data or DOM manipulation.</span>
+        </section>
+        <section data-auto-animate> <!-- SLIDE 3 -->
+					<p data-id="code-title">Demonstrating concept</p>
+          <p class="text">Create two files:</p>
+          <p class="text">1. index.html</p>
+          <p class="text">2. script.js</p>
+          <p class="text">In index.html, create a div with the id: “app”. Also, link the script.js file.</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-2"><script type="text/template">
+					<div id="app"></div>
+					<script src="./script.js"></script>
+					</script></code></pre>
+          <br />
+          <p class="text">In script.js file, create two objects to hold the routes and the template functions that will be rendered.</p>
+          <pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-2"><script type="text/template">
+            let routes = {};
+            let templates = {};
+            </script></code></pre>
+				</section>
+        <section data-auto-animate> <!-- SLIDE 4 -->
+					<p class="text">Then create two functions to display the home and about pages.</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-25"><script type="text/template">
+            let app_div = document.getElementById('app');
+
+            function home() {
+              let div = document.createElement('div');
+              let link = document.createElement('a');
+              link.href = '#/about';
+              link.innerText = 'About';
+            
+              div.innerHTML = '<h1>Home</h1>';
+              div.appendChild(link);
+            
+              app_div.appendChild(div);
+            };
+            
+            function about() {
+              let div = document.createElement('div');
+              let link = document.createElement('a');
+              link.href = '#/';
+              link.innerText = 'Home';
+            
+              div.innerHTML = '<h1>About</h1>';
+              div.appendChild(link);
+            
+              app_div.appendChild(div);
+            };
+					</script></code></pre>
+				</section>
+        <section data-auto-animate> <!-- SLIDE 5 -->
+					<p class="text">Define the routes. A route is defined by a path and a template to be rendered.</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-25"><script type="text/template">
+            function route (path, template) {
+              if (typeof template === 'function') {
+                  return routes[path] = template;
+              }
+              else if (typeof template === 'string') {
+                  return routes[path] = templates[template];
+              } else {
+                  return;
+              };
+            };
+					</script></code></pre>
+				</section>
+        <section data-auto-animate> <!-- SLIDE 6 -->
+					<p class="text">The next step is to register a function that will act as a template engine.</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-25"><script type="text/template">
+            function template (name, templateFunction) {
+              return templates[name] = templateFunction;
+            };
+					</script></code></pre>
+          <p class="text">And we can map a template to a route:</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-25"><script type="text/template">
+            template('home', function(){
+              home();
+            });
+          
+            template('about', function(){
+              about();
+            });
+					</script></code></pre>
+				</section>
+        <section data-auto-animate> <!-- SLIDE 7 -->
+					<p class="text">Define the route to template mapping:</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-25"><script type="text/template">
+            route('/', 'home');
+            route('/about', 'about');
+					</script></code></pre>
+          <p class="text">Also we need to do is to detect and resolve the changes in the URL to render the correct template, as demonstrated below:</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-25"><script type="text/template">
+            function resolveRoute(route) {
+              try {
+                  return routes[route];
+              } catch (e) {
+                  throw new Error(`Route ${route} not found`);
+              };
+            };
+					</script></code></pre>
+				</section>
+        <section data-auto-animate> <!-- SLIDE 8 -->
+					<p class="text">Create a router function that will retrieve the route from the URL hash and call the template function.</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-25"><script type="text/template">
+            function router(evt) {
+              let url = window.location.hash.slice(1) || '/';
+              let route = resolveRoute(url);
+          
+              route();
+            };
+					</script></code></pre>
+          <p class="text">To switch between views, you need to listen for the load and hashchange events. </p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-25"><script type="text/template">
+            window.addEventListener('load', router);
+            window.addEventListener('hashchange', router);
+					</script></code></pre>
+				</section>
+        <section data-auto-animate> <!-- SLIDE 9 -->
+					<p class="text">When we open the index.html file in our browser, we should see the home page.</p>
+					<img src="./assets/homepage.jpg" alt="homepage">
+          <p class="text">Click the about link should navigate us to the about page.</p>
+					<img src="./assets/aboutpage.jpg" alt="aboutpage">
+				</section>
+        <section> <!-- SLIDE 10 -->
+					Introduction to the History API in JavaScript
+				</section>
+        <section > <!-- SLIDE 11 -->
+					<p class="text">The HTML5 history API is a standardized way to manipulate the browser history via script. 
+            Part of this API — navigating the history — has been available in previous versions of HTML. 
+            The new parts in HTML5 include a way to add entries to the browser history, to visibly change the URL in 
+            the browser location bar (without triggering a page refresh), and an event that fires when those entries 
+            are removed from the stack by the user pressing the browser’s back button.
+          </p>
+          <p class="text">
+            The HTML5 History API gives developers the ability to modify a website’s URL without a full page refresh. This is 
+            particularly useful for loading portions of a page with JavaScript, such that the content is significantly different 
+            and warrants a new URL.
+          </p>
+				</section>
+        <section > <!-- SLIDE 12 -->
+					<p class="text">
+            To check out the features of this API it’s as simple as heading into the Developer Tools and typing history into 
+            the console.
+          </p>
+          <p>
+            <img src="./assets/history.png" alt="homepage">
+          </p>
+				</section>
+        <section data-auto-animate> <!-- SLIDE 13 -->
+					<p class="text">
+            So let`s take our example code from routing and to added history api.
+          </p>
+          <p class="text">Now our index.html</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-5"><script type="text/template">
+            <body>
+              <button onclick="myBack()">Go Back</button>
+              <button onclick="myForward()">Go Forward</button>
+              <div id="app"></div>
+            </body>
+          </script></code></pre>
+				</section>
+        <section> <!-- SLIDE 14 -->
+          <p class="text">It is out old code</p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1-6 | 23 | 41 | 58 | 72 | 76-86| 88-90| 92 | 101 | 107"><script type="text/template">
+            let routes = [];
+            let templates = {};
+
+            let app_div = document.getElementById('app');
+
+            function home() {
+                let div = document.createElement('div');
+                let link1 = document.createElement('a');
+                link1.href = '/about';
+                link1.innerText = ' About ';
+                let link2 = document.createElement('a');
+                link2.href = '/contact';
+                link2.innerText = ' Contact ';
+            
+                div.innerHTML = '<h1>Home</h1>';
+                div.appendChild(link1);
+                div.appendChild(link2);
+            
+                app_div.innerHTML = '';
+                app_div.appendChild(div);
+            };
+
+            function about() {
+                let div = document.createElement('div');
+                let link = document.createElement('a');
+                link.href = '/';
+                link.innerText = ' Home ';
+                let link2 = document.createElement('a');
+                link2.href = '/contact';
+                link2.innerText = 'Contact';
+            
+            
+                div.innerHTML = '<h1>About page</h1>';
+                div.appendChild(link);
+                div.appendChild(link2);
+            
+                app_div.innerHTML = '';
+                app_div.appendChild(div);
+            };
+
+            function contact() {
+              let div = document.createElement('div');
+              let link = document.createElement('a');
+              link.href = '/';
+              link.innerText = ' Home ';
+              let link1 = document.createElement('a');
+              link1.href = '/about';
+              link1.innerText = ' About ';
+            
+              div.innerHTML = '<h1>Contact page</h1>';
+              div.appendChild(link);
+              div.appendChild(link1);
+            
+              app_div.innerHTML = '';
+              app_div.appendChild(div);
+            };
+
+            function route (path, template) {
+              if (typeof template === 'function') {
+                  routes.push({path: path, template: template});
+              }
+              else if (typeof template === 'string') {
+                  routes.push({
+                    path: path,
+                    template: templates[template]
+                  });
+              } else {
+                  return;
+              };
+            };
+
+            function template (name, templateFunction) {
+              return templates[name] = templateFunction;
+            };
+
+            template('home', function(){
+              home();
+            });
+
+            template('about', function(){
+              about();
+            });
+
+            template('contact', function(){
+              contact();
+            });
+
+            route('/', 'home');
+            route('/contact', 'contact');
+            route('/about', 'about');
+
+            function resolveRoute(route) {
+              try {
+                  const f = routes.filter(elem => elem.path === route);
+                  return f[0].template;
+              } catch (e) {
+                  throw new Error(`Route ${route} not found`);
+              };
+            };
+
+            function router(evt) {
+              let url = window.location.pathname || '/';
+              let route = resolveRoute(url);
+              route();
+            };
+
+            window.addEventListener('load', router);
+					</script></code></pre>
+          </section>
+          <section> <!-- SLIDE 15 -->
+					<p class="text">Create function <em>createMyHistory</em></p>
+					<pre data-id="code-animation"><code class="hljs" data-trim data-line-numbers="1 | 2 | 3 | 6 | 13 | 25 | 27 | 33 | 46 | 51 | 53-59 | 61-63 "><script type="text/template">
+            const createMyHistory = () => {
+              const listenerList = [];
+              const listen = (listener) => {
+                listenerList.push(listener);
+              };
+              const push = (args) => {
+                window.history.pushState(null, null, args);
+                listenerList.length > 0 &&
+                  listenerList.forEach((listener) => {
+                    listener(window.location);
+                  });
+              };
+              const replace = (args) => {
+                console.log('here1', location.pathname)
+                window.history.replaceState(null, null, args);
+                listenerList.length > 0 &&
+                  listenerList.forEach((listener) => {
+                    console.log('here2', location.pathname)
+                    listener(window.location);
+                  });
+              };
+              return { listen, push, replace };
+            };
+            
+            const myHistory = createMyHistory();
+            
+            app_div.onclick = (event) => {
+              event.preventDefault();
+              const pageId = event.target.href;
+              myHistory.push(pageId);
+            }
+            
+            const matchRoutes = (routes, location) => {
+              let match = {
+                path: "/",
+                template: () => "404 not fount"
+              };
+              routes.forEach((route) => {
+                if (route.path === location.pathname ) {
+                  match = route;
+                }
+              });
+              return match;
+            };
+            
+            const listener = (location) => {
+              const match = matchRoutes(routes, location);
+              match.template();
+            };
+            
+            myHistory.listen(listener);
+            
+            function myBack() {
+              window.history.back();
+            }
+            
+            function myForward() {
+              window.history.forward();
+            }
+            
+            window.addEventListener('popstate', function(e){
+              myHistory.replace(location.pathname);
+            }, false);
+					</script></code></pre>
+				</section>
+        <section data-auto-animate> <!-- SLIDE 16 -->
+					Show result in browser...
+        </section>
+        <section> <!-- SLIDE 17 -->
+					<p class="text">
+            So we've covered the basic history api example. We see that routing and history api are closely related.
+          </p>
+          <p class="text">
+            There is no question that the History API has a place in modern web applications. As we continue to develop 
+            increasingly complex client-side applications we need to make sure that we don’t break the native functionality 
+            of the browser. The History API provides a simple solution to this problem. With great browser support there 
+            really is no reason why you can’t start using this today.
+          </p>
+        </section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
